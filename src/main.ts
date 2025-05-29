@@ -22,8 +22,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Puerto dinámico para Railway o puerto 4000 local
-  const port = parseInt(process.env.PORT ?? '4000', 10);
-
+  const port = process.env.PORT || 4000;
   await app.listen(port);
 
   // Mensaje de servidor levantado
