@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  role       Role
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  devices                         device[]
+  scheduled_tiktok_interactions   scheduled_tiktok_interaction[]
+  scheduled_facebook_interactions scheduled_facebook_interaction[]
+}
+
+model device {
+  id              Int          @id @default(autoincrement())
+  user_id         Int
+  udid            String
+  device_type     DeviceType
+  status          DeviceStatus @default(INACTIVO)
+  os_version      String
+  brand           String
+  connected_at    DateTime     @default(now())
+  last_activity   DateTime?
+  complete_config Boolean      @default(false)
+  user            user         @relation(fields: [user_id], references: [id])
+
+  google_accounts                google_account[]
+  tiktok_interaction_histories   tiktok_interaction_history[]
+  facebook_interaction_histories facebook_interaction_history[]
+}
+
+model google_account {
+  id        Int                 @id @default(autoincrement())
+  device_id Int
+  email     String
+  status    GoogleAccountStatus @default(ACTIVO)
+  device    device              @relation(fields: [device_id], references: [id])
+
+  social_network_accounts social_network_account[]
+}
+
+model social_network {
+  id   Int               @id @default(autoincrement())
+  name SocialNetworkType
+
+  social_network_accounts social_network_account[]
+}
+
+model social_network_account {
+  id                Int                 @id @default(autoincrement())
+  social_network_id Int
+  google_account_id Int
+  username          String?
+  status            SocialAccountStatus @default(ACTIVO)
+  created_at        DateTime            @default(now())
+  google_account    google_account      @relation(fields: [google_account_id], references: [id])
+  social_network    social_network      @relation(fields: [social_network_id], references: [id])
+}
+
+model scheduled_tiktok_interaction {
+  id          Int               @id @default(autoincrement())
+  user_id     Int
+  video_url   String
+  views_count Int               @default(0)
+  liked       Boolean           @default(false)
+  saved       Boolean           @default(false)
+  comment     String?
+  status      InteractionStatus @default(PENDIENTE)
+  user        user              @relation(fields: [user_id], references: [id])
+}
+
+model scheduled_facebook_interaction {
+  id                  Int               @id @default(autoincrement())
+  user_id             Int
+  post_url            String
+  liked               Boolean           @default(false)
+  comment             String?
+  shared_groups_count Int               @default(0)
+  time_between_posts  Int               @default(0)
+  status              InteractionStatus @default(PENDIENTE)
+  user                user              @relation(fields: [user_id], references: [id])
+}
+
+model tiktok_interaction_history {
+  id          Int           @id @default(autoincrement())
+  device_id   Int
+  username    String?
+  total_views Int           @default(0)
+  liked       Boolean       @default(false)
+  video_saved Boolean       @default(false)
+  commented   String?
+  finished_at DateTime?
+  video_url   String?
+  status      HistoryStatus @default(FALLIDA)
+  device      device        @relation(fields: [device_id], references: [id])
+}
+
+model facebook_interaction_history {
+  id                  Int           @id @default(autoincrement())
+  device_id           Int
+  shared_groups_count Int           @default(0)
+  liked               Boolean       @default(false)
+  commented           Boolean       @default(false)
+  finished_at         DateTime?
+  status              HistoryStatus @default(FALLIDA)
+  device              device        @relation(fields: [device_id], references: [id])
+}
+
+enum Role {
+  ADMINISTRADOR
+  PERSONAL
+}
+
+enum DeviceType {
+  FISICO
+  EMULADOR
+}
+
+enum DeviceStatus {
+  ACTIVO
+  INACTIVO
+}
+
+enum GoogleAccountStatus {
+  ACTIVO
+  INACTIVO
+  BANEADO
+}
+
+enum SocialAccountStatus {
+  ACTIVO
+  INACTIVO
+  SUSPENDIDO
+  BANEADO
+}
+
+enum InteractionStatus {
+  PENDIENTE
+  EN_PROGRESO
+  COMPLETADA
+  FALLIDA
+  CANCELADO
+}
+
+enum HistoryStatus {
+  COMPLETADA
+  FALLIDA
+}
+
+enum SocialNetworkType {
+  TIKTOK
+  FACEBOOK
+}
