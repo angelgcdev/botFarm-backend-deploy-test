@@ -65,8 +65,10 @@ export class AuthService {
     //Establecer cookie con HttpOnly y Secure si estas en produccion
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', //solo en https
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      // secure: process.env.NODE_ENV === 'production', //solo en https
+      secure: true, //solo en https
+      // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24, // 1 dia
     });
 
