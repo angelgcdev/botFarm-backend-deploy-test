@@ -70,6 +70,7 @@ export class AuthService {
       // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24, // 1 dia
+      path: '/',
     });
 
     return payload;
